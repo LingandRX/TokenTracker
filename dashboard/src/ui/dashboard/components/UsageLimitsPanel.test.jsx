@@ -460,6 +460,36 @@ describe("UsageLimitsPanel", () => {
     expect(screen.getByText(copy("limits.codingPlan.setupHint.title"))).toBeInTheDocument();
   });
 
+  it("renders Xiaomi Token Plan quota bars and not-connected setup hint", () => {
+    const { rerender } = render(createElement(UsageLimitsPanel, {
+      xiaomiTokenPlan: {
+        configured: true,
+        error: null,
+        plan_label: "Pro",
+        primary_window: { used_percent: 28, reset_at: "2099-05-01T00:00:00.000Z" },
+        credit_window: {
+          total_credits: 456000000,
+          used_credits: 127680000,
+          remaining_credits: 328320000,
+        },
+      },
+      order: ["xiaomiTokenPlan"],
+    }));
+
+    expect(screen.getByText("Xiaomi Token Plan Pro")).toBeInTheDocument();
+    expect(screen.getByText(copy("limits.label.xiaomi_token_plan_credits"))).toBeInTheDocument();
+    expect(screen.getByText("28%")).toBeInTheDocument();
+
+    // Not-connected fallback shows the Xiaomi setup guide.
+    rerender(createElement(UsageLimitsPanel, {
+      xiaomiTokenPlan: { configured: false },
+      order: ["xiaomiTokenPlan"],
+    }));
+    expect(screen.getByText("Xiaomi Token Plan")).toBeInTheDocument();
+    expect(screen.getByText("Not connected")).toBeInTheDocument();
+    expect(screen.getByText(copy("limits.xiaomiTokenPlan.setupHint.title"))).toBeInTheDocument();
+  });
+
   it("renders Qoder credits with exact amounts in the hover detail", () => {
     render(
       <UsageLimitsPanel

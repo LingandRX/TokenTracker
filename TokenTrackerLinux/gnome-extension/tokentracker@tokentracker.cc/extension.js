@@ -74,6 +74,7 @@ const PROVIDER_NAMES = {
     grok: 'Grok', zcode: 'ZCode', opencodeGo: 'OpenCode Go',
     commandCode: 'Command Code', devin: 'Devin', qoder: 'Qoder',
     qoderCn: 'Qoder CN', codingPlan: 'Coding Plan', agentPlan: 'Agent Plan',
+    xiaomiTokenPlan: 'Xiaomi Token Plan',
 };
 
 const WINDOW_NAMES = {

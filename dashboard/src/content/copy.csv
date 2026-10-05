@@ -1659,6 +1659,18 @@ limits.devin.setupHint.subtitle,ui,LimitsPage,UsageLimitsPanel,devin_hint_subtit
 limits.devin.setupHint.step1,ui,LimitsPage,UsageLimitsPanel,devin_hint_step1,"Install the Devin CLI and sign in with the command below — TokenTracker picks it up with no restart.",,active
 limits.devin.setupHint.note,ui,LimitsPage,UsageLimitsPanel,devin_hint_note,"Refresh this page after signing in. TokenTracker sends the saved session token only to Devin's official quota endpoint.",,active
 limits.devin.setupHint.snippet_login,ui,LimitsPage,UsageLimitsPanel,devin_hint_snippet_login,"devin auth login",,active
+limits.provider.xiaomi_token_plan,ui,LimitsPage,UsageLimitsPanel,provider_xiaomi_token_plan,"Xiaomi Token Plan",,active
+limits.label.xiaomi_token_plan_credits,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_credits,"Plan Credits",,active
+limits.xiaomiTokenPlan.status.inactive,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_status_inactive,"Xiaomi Token Plan subscription is inactive",,active
+limits.xiaomiTokenPlan.setupHint.title,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_title,"Connect Xiaomi Token Plan",,active
+limits.xiaomiTokenPlan.setupHint.subtitle,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_subtitle,"Reads your Xiaomi MiMo Token Plan usage from platform.xiaomimimo.com.",,active
+limits.xiaomiTokenPlan.setupHint.step1,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_step1,"Sign in at platform.xiaomimimo.com with your Xiaomi account.",,active
+limits.xiaomiTokenPlan.setupHint.cta,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_cta,"Open platform.xiaomimimo.com",,active
+limits.xiaomiTokenPlan.setupHint.step2,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_step2,"Copy your session cookie from browser developer tools.",,active
+limits.xiaomiTokenPlan.setupHint.step3,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_step3,"Run this command, paste your cookie (input stays invisible), then restart TokenTracker:",,active
+limits.xiaomiTokenPlan.setupHint.copy,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_copy,"Copy",,active
+limits.xiaomiTokenPlan.setupHint.copied,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_copied,"Copied",,active
+limits.xiaomiTokenPlan.setupHint.note_app,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_note_app,"macOS app: use the launchctl setenv line, then reopen the app.",,active
 quota.title,ui,QuotaWidget,QuotaWidget,title,"Limits",,active
 quota.remaining,ui,QuotaWidget,QuotaWidget,remaining,"Remaining",,active
 quota.stale,ui,QuotaWidget,QuotaWidget,stale,"Update delayed",,active

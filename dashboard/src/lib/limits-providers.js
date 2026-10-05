@@ -19,6 +19,7 @@ export const LIMIT_PROVIDER_IDS = [
   "codingPlan",
   "agentPlan",
   "devin",
+  "xiaomiTokenPlan",
 ];
 
 /** Keys for ProviderIcon — mono logos use inline SVG; colored logos use /brand-logos/. */
@@ -49,6 +50,8 @@ export const LIMIT_PROVIDER_ICON_KEYS = {
   agentPlan: "VOLCANO-ARK",
   // Devin (devin.ai) — the three-hexagon "nodes" mark under /brand-logos/.
   devin: "DEVIN",
+  // Xiaomi MiMo Token Plan (platform.xiaomimimo.com) — uses the existing MIMO brand mark.
+  xiaomiTokenPlan: "MIMO",
 };
 
 export function limitProviderIconKey(id) {
@@ -91,6 +94,8 @@ export function limitProviderName(id) {
       return copy("limits.provider.ark_agent_plan");
     case "devin":
       return copy("limits.provider.devin");
+    case "xiaomiTokenPlan":
+      return copy("limits.provider.xiaomi_token_plan");
     default:
       return String(id || "");
   }

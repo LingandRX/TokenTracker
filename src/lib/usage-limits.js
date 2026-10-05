@@ -33,6 +33,7 @@ const { fetchOpencodeGoLimits } = require("./opencode-go-limits");
 const { fetchCommandcodeLimits } = require("./commandcode-limits");
 const { fetchDevinLimits } = require("./devin-limits");
 const { fetchQoderLimits, fetchQoderCnLimits } = require("./qoder-limits");
+const { fetchXiaomiTokenPlanLimits } = require("./xiaomi-token-plan-limits");
 const { fetchArkCodingPlanLimits } = require("./ark-coding-plan-limits");
 const { fetchArkAgentPlanLimits } = require("./ark-agent-plan-limits");
 const { fetchProviderServiceStatus } = require("./provider-status");
@@ -3848,7 +3849,7 @@ async function fetchUsageLimitsUncached({
     : null;
 
   const providerFetch = withFetchTimeout(fetchImpl, providerTimeoutMs);
-  const [claudeResult, codexResult, cursor, kimi, gemini, kiro, antigravity, copilot, grok, zcode, opencodeGoRaw, qoder, qoderCn, codingPlan, agentPlan, commandCodeRaw, devinRaw, claudeServiceStatus] = await Promise.all([
+  const [claudeResult, codexResult, cursor, kimi, gemini, kiro, antigravity, copilot, grok, zcode, opencodeGoRaw, qoder, qoderCn, codingPlan, agentPlan, commandCodeRaw, devinRaw, xiaomiTokenPlanRaw, claudeServiceStatus] = await Promise.all([
     claudeToken && !freshClaudeCache && !claudeRetryAtMs
       ? withProviderTimeout(fetchClaudeUsageLimits(claudeToken, { fetchImpl: providerFetch, maxAttempts: 1 }), "Claude", providerTimeoutMs).then(
           (value) => ({ status: "fulfilled", value }),
@@ -3972,6 +3973,12 @@ async function fetchUsageLimitsUncached({
         (value) => ({ status: "fulfilled", value }),
         (reason) => ({ status: "rejected", reason }),
       ),
+    // Xiaomi Token Plan (platform.xiaomimimo.com):
+    withProviderTimeout(
+      fetchXiaomiTokenPlanLimits({ home, env, fetchImpl: providerFetch }),
+      "Xiaomi Token Plan",
+      providerTimeoutMs,
+    ).catch((reason) => ({ configured: true, error: reason?.message || "Unknown error" })),
     // Public status-page probe (fail-soft, own 5-min cache in provider-status.js).
     // Only probed for configured accounts — without a token the Claude section
     // never renders, so the reading would have nowhere to go.
@@ -4198,6 +4205,17 @@ async function fetchUsageLimitsUncached({
       : { configured: true, error: reason?.message || "Unknown error" };
   }
 
+  let xiaomiTokenPlan;
+  if (xiaomiTokenPlanRaw && xiaomiTokenPlanRaw.configured === false) {
+    xiaomiTokenPlan = xiaomiTokenPlanRaw;
+  } else if (xiaomiTokenPlanRaw?.auth_error) {
+    xiaomiTokenPlan = xiaomiTokenPlanRaw;
+  } else if (xiaomiTokenPlanRaw?.subscription_status === "inactive") {
+    xiaomiTokenPlan = xiaomiTokenPlanRaw;
+  } else {
+    xiaomiTokenPlan = xiaomiTokenPlanRaw || { configured: true, error: "Unknown error" };
+  }
+
   const data = {
     fetched_at: new Date(nowMs).toISOString(),
     claude: withPlanLabel(claude, claudePlanType, "Claude"),
@@ -4232,6 +4250,7 @@ async function fetchUsageLimitsUncached({
     qoderCn: withPlanLabel(qoderCn, qoderCn?.plan_label, "Qoder CN"),
     codingPlan: withPlanLabel(codingPlan, codingPlan?.plan_label, "Ark Coding Plan"),
     agentPlan: withPlanLabel(agentPlan, agentPlan?.plan_label, "Ark Agent Plan"),
+    xiaomiTokenPlan: withPlanLabel(xiaomiTokenPlan, xiaomiTokenPlan?.plan_label, "Xiaomi Token Plan"),
   };
 
   for (const [providerName, provider] of Object.entries(data)) {
@@ -4305,4 +4324,5 @@ module.exports = {
   fetchCommandcodeLimits,
   fetchQoderLimits,
   fetchQoderCnLimits,
+  fetchXiaomiTokenPlanLimits,
 };

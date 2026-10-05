@@ -669,6 +669,7 @@ function renderProviderGroup(id, data, mode, expanded, onToggle, subscription = 
         {id === "codingPlan" ? <ArkCodingPlanSetupHint /> : null}
         {id === "agentPlan" ? <ArkAgentPlanSetupHint /> : null}
         {id === "devin" ? <DevinSetupHint /> : null}
+        {id === "xiaomiTokenPlan" ? <XiaomiTokenPlanSetupHint /> : null}
       </>,
       expanded,
       onToggle,
@@ -681,6 +682,17 @@ function renderProviderGroup(id, data, mode, expanded, onToggle, subscription = 
     return renderUnlinkedProvider(
       id,
       <StatusLine>{copy("limits.opencodeGo.status.inactive")}</StatusLine>,
+      expanded,
+      onToggle,
+      subscription,
+      now,
+      mode,
+    );
+  }
+  if (id === "xiaomiTokenPlan" && data.subscription_status === "inactive") {
+    return renderUnlinkedProvider(
+      id,
+      <StatusLine>{copy("limits.xiaomiTokenPlan.status.inactive")}</StatusLine>,
       expanded,
       onToggle,
       subscription,
@@ -701,6 +713,7 @@ function renderProviderGroup(id, data, mode, expanded, onToggle, subscription = 
         {id === "codingPlan" ? <ArkCodingPlanSetupHint /> : null}
         {id === "agentPlan" ? <ArkAgentPlanSetupHint /> : null}
         {id === "devin" ? <DevinSetupHint /> : null}
+        {id === "xiaomiTokenPlan" ? <XiaomiTokenPlanSetupHint /> : null}
       </>,
       expanded,
       onToggle,
@@ -1006,6 +1019,64 @@ function DevinSetupHint() {
   );
 }
 
+function XiaomiTokenPlanSetupHint() {
+  const [copied, setCopied] = useState(false);
+  const snippet = [
+    "read -r -s XIAOMI_TOKEN_PLAN_COOKIE",
+    "export XIAOMI_TOKEN_PLAN_COOKIE",
+    'launchctl setenv XIAOMI_TOKEN_PLAN_COOKIE "$XIAOMI_TOKEN_PLAN_COOKIE"',
+  ].join("\n");
+
+  const onCopy = async (e) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(snippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch (_e) {}
+  };
+
+  return (
+    <div className="mt-1.5 rounded-lg border border-oai-gray-200 dark:border-oai-gray-700/60 bg-oai-gray-50/50 dark:bg-oai-gray-900/20 p-3 text-[11px] text-oai-gray-600 dark:text-oai-gray-300">
+      <div className="text-[12px] font-semibold text-oai-gray-800 dark:text-oai-gray-100">{copy("limits.xiaomiTokenPlan.setupHint.title")}</div>
+      <div className="mt-0.5 leading-snug text-oai-gray-500 dark:text-oai-gray-400">{copy("limits.xiaomiTokenPlan.setupHint.subtitle")}</div>
+
+      <ol className="mt-2.5 space-y-2.5">
+        <HintStep n="1">
+          <div>{copy("limits.xiaomiTokenPlan.setupHint.step1")}</div>
+          <a
+            href="https://platform.xiaomimimo.com"
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="mt-1 inline-flex items-center gap-1 rounded-md bg-oai-brand/10 px-2 py-1 font-medium text-oai-brand hover:bg-oai-brand/15 transition-colors"
+          >
+            {copy("limits.xiaomiTokenPlan.setupHint.cta")}
+            <ExternalArrow />
+          </a>
+        </HintStep>
+        <HintStep n="2">
+          <div>{copy("limits.xiaomiTokenPlan.setupHint.step2")}</div>
+        </HintStep>
+        <HintStep n="3">
+          <div className="flex items-center gap-2">
+            <span>{copy("limits.xiaomiTokenPlan.setupHint.step3")}</span>
+            <button
+              type="button"
+              onClick={onCopy}
+              className="shrink-0 rounded-md border border-oai-gray-300 dark:border-oai-gray-700 px-2 py-0.5 text-[10.5px] text-oai-gray-700 dark:text-oai-gray-200 hover:bg-oai-gray-100 dark:hover:bg-oai-gray-800 transition-colors"
+            >
+              {copied ? copy("limits.xiaomiTokenPlan.setupHint.copied") : copy("limits.xiaomiTokenPlan.setupHint.copy")}
+            </button>
+          </div>
+          <pre className="mt-1.5 overflow-x-auto rounded-md bg-oai-gray-100 dark:bg-oai-gray-900/60 px-2 py-1.5 font-mono text-[10.5px] leading-relaxed whitespace-pre">{snippet}</pre>
+          <div className="mt-1 text-[10px] text-oai-gray-400 dark:text-oai-gray-500">{copy("limits.xiaomiTokenPlan.setupHint.note_app")}</div>
+        </HintStep>
+      </ol>
+    </div>
+  );
+}
+
 // Ark Coding Plan (火山方舟) quota comes from the official Ark CLI (arkcli)
 // running on this machine — there is no public quota endpoint, so the CLI is
 // feature-detected at fetch time. When it is missing (or not signed in) the
@@ -1169,8 +1240,8 @@ function useWidestLabelWidth(containerRef) {
   return labelWidth;
 }
 
-export function UsageLimitsPanel({ claude, codex, cursor, gemini, kimi, kiro, grok, antigravity, copilot, zcode, opencodeGo, commandCode, qoder, qoderCn, codingPlan, agentPlan, devin, order, visibility, displayMode, subscriptions = [], showSubscriptions = true }) {
-  const dataById = { claude, codex, cursor, gemini, kimi, kiro, grok, antigravity, copilot, zcode, opencodeGo, commandCode, qoder, qoderCn, codingPlan, agentPlan, devin };
+export function UsageLimitsPanel({ claude, codex, cursor, gemini, kimi, kiro, grok, antigravity, copilot, zcode, opencodeGo, commandCode, qoder, qoderCn, codingPlan, agentPlan, devin, xiaomiTokenPlan, order, visibility, displayMode, subscriptions = [], showSubscriptions = true }) {
+  const dataById = { claude, codex, cursor, gemini, kimi, kiro, grok, antigravity, copilot, zcode, opencodeGo, commandCode, qoder, qoderCn, codingPlan, agentPlan, devin, xiaomiTokenPlan };
   const containerRef = useRef(null);
   const labelWidth = useWidestLabelWidth(containerRef);
   const [expandedId, setExpandedId] = useState(null);

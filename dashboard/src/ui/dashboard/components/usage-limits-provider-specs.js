@@ -248,6 +248,18 @@ export const PROVIDER_LIMIT_SPECS = {
       ];
     },
   },
+  xiaomiTokenPlan: {
+    windows(data) {
+      return [
+        {
+          key: "monthly",
+          labelKey: "limits.label.xiaomi_token_plan_credits",
+          window: data.primary_window,
+          windowSeconds: 30 * 86400,
+        },
+      ];
+    },
+  },
 };
 
 /** Static copy() anchors for validate:copy — labels resolve at runtime via spec.labelKey. */
@@ -307,5 +319,6 @@ export function usageLimitsLabelCopyAnchor() {
     copy("limits.label.ark_agent_plan_monthly"),
     copy("limits.label.devin_daily"),
     copy("limits.label.devin_weekly"),
+    copy("limits.label.xiaomi_token_plan_credits"),
   ];
 }

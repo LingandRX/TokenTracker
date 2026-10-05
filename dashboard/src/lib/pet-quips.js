@@ -322,6 +322,7 @@ const PET_LIMIT_PROVIDER_COPY_NAME_KEYS = {
   agentPlan: "limits.provider.ark_agent_plan",
   commandCode: "limits.provider.command_code",
   devin: "limits.provider.devin",
+  xiaomiTokenPlan: "limits.provider.xiaomi_token_plan",
 };
 
 // Unix timestamps are normally seconds; values above this order of magnitude

@@ -125,6 +125,17 @@ interface UsageLimitsData {
     stale?: boolean;
     cached_at?: string | null;
   };
+  xiaomiTokenPlan?: {
+    configured: boolean;
+    error?: string | null;
+    plan_label?: string | null;
+    auth_action_required?: string | null;
+    subscription_status?: string | null;
+    primary_window?: { used_percent: number; reset_at?: string | null } | null;
+    credit_window?: { total_credits?: number; used_credits?: number; remaining_credits?: number } | null;
+    stale?: boolean;
+    cached_at?: string | null;
+  };
 }
 
 interface UsageLimitsInitialState {

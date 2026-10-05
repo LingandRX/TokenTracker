@@ -36,7 +36,7 @@ final class LimitsSettingsStore: ObservableObject {
     static let shared = LimitsSettingsStore(userDefaults: .standard)
 
     /// All known provider identifiers, in default display order.
-    static let allProviders: [String] = ["claude", "codex", "cursor", "gemini", "kimi", "kiro", "grok", "copilot", "antigravity", "zcode", "opencodeGo", "commandCode", "qoder", "qoderCn", "codingPlan", "agentPlan", "devin"]
+    static let allProviders: [String] = ["claude", "codex", "cursor", "gemini", "kimi", "kiro", "grok", "copilot", "antigravity", "zcode", "opencodeGo", "commandCode", "qoder", "qoderCn", "codingPlan", "agentPlan", "devin", "xiaomiTokenPlan"]
 
     static let displayNames: [String: String] = [
         "claude": "Claude",
@@ -56,6 +56,7 @@ final class LimitsSettingsStore: ObservableObject {
         "codingPlan": "Ark Coding Plan",
         "agentPlan": "Ark Agent Plan",
         "devin": "Devin",
+        "xiaomiTokenPlan": "Xiaomi Token Plan",
     ]
 
     /// Providers whose visibility switch is also the consent to fetch them.
