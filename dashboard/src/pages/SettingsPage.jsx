@@ -112,14 +112,6 @@ export function SettingsPage() {
         }]
       : []),
     {
-      id: SETTINGS_SECTION_IDS.ACCOUNT,
-      label: copy("settings.section.account"),
-      description: copy("settings.section.account.description"),
-      group: SETTINGS_GROUP_IDS.PERSONAL,
-      Icon: UserRound,
-      content: <AccountSection />,
-    },
-    {
       id: SETTINGS_SECTION_IDS.LIMITS,
       label: copy("settings.section.limits"),
       description: copy("settings.section.limits.description"),

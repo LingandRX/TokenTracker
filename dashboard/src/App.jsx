@@ -5,17 +5,15 @@ import { useLocale } from "./hooks/useLocale.js";
 import { ThemeProvider } from "./ui/foundation/ThemeProvider.jsx";
 import { useInsforgeAuth } from "./contexts/InsforgeAuthContext.jsx";
 import { LoginModalProvider } from "./contexts/LoginModalContext.jsx";
-import { getBackendBaseUrl, getLeaderboardBaseUrl } from "./lib/config";
+import { getBackendBaseUrl } from "./lib/config";
 import { isMockEnabled } from "./lib/mock-mode";
 import { isScreenshotModeEnabled } from "./lib/screenshot-mode";
 import { useCloudUsageSync } from "./hooks/use-cloud-usage-sync";
 import { AppLayout } from "./ui/components/Sidebar.jsx";
 import { ToastProvider } from "./ui/components/Toast.jsx";
 import {
-  getLeaderboardPreloadContextKey,
   markDashboardMainContentVisible,
   preloadDashboardPageResources,
-  preloadLeaderboardDefaultState,
 } from "./lib/dashboard-preload.js";
 // Telemetry beacons and modal/palette UI are not first-paint critical; lazy
 // loading keeps them out of the eager entry chunk (which the anonymous share
@@ -62,26 +60,12 @@ const DashboardPage = lazy(() =>
 );
 const IpCheckPage = lazy(() => import("./pages/IpCheckPage.jsx"));
 const ServiceStatusPage = lazy(() => import("./pages/ServiceStatusPage.jsx"));
-const AchievementsPage = lazy(() => import("./pages/AchievementsPage.jsx"));
 const LandingPage = lazy(() =>
   import("./pages/LandingPage.jsx").then((m) => ({ default: m.LandingPage })),
-);
-const LeaderboardPage = lazy(() =>
-  import("./pages/LeaderboardPage.jsx").then((m) => ({ default: m.LeaderboardPage })),
-);
-const LeaderboardProfilePage = lazy(() =>
-  import("./pages/LeaderboardProfilePage.jsx").then((m) => ({ default: m.LeaderboardProfilePage })),
 );
 const LimitsPage = lazy(() =>
   import("./pages/LimitsPage.jsx").then((m) => ({ default: m.LimitsPage })),
 );
-const LoginPage = lazy(() =>
-  import("./pages/LoginPage.jsx").then((m) => ({ default: m.LoginPage })),
-);
-const ResetPasswordPage = lazy(() =>
-  import("./pages/ResetPasswordPage.jsx").then((m) => ({ default: m.ResetPasswordPage })),
-);
-const DevicePage = lazy(() => import("./pages/DevicePage.jsx"));
 const WrappedPage = lazy(() => import("./pages/WrappedPage.jsx"));
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage.jsx").then((m) => ({ default: m.SettingsPage })),
@@ -109,7 +93,6 @@ export default function App() {
   useCloudUsageSync();
   const dashboardMainContentVisibleRef = useRef(false);
   const dashboardResourcePreloadStartedRef = useRef(false);
-  const leaderboardStatePreloadContextKeysRef = useRef(new Set());
   const mockEnabled = isMockEnabled();
   const screenshotMode = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -139,44 +122,9 @@ export default function App() {
   const profileUserId = profileMatch ? profileMatch[1] : null;
 
   const cloudAuthSignedIn = Boolean(insforge.enabled && insforge.signedIn);
-  const signedIn = isLocalMode || cloudAuthSignedIn;
+  const signedIn = true;
   const sessionSoftExpired = false;
   const baseUrl = getBackendBaseUrl();
-  const isAuthGateTriggered = !signedIn && !mockEnabled && !isLocalMode;
-  const leaderboardAccessMode = mockEnabled
-    ? "mock"
-    : insforge.loading
-      ? "unavailable"
-      : cloudAuthSignedIn
-        ? "cloud"
-        : signedIn
-          ? "local"
-          : "unavailable";
-
-  const tryPreloadLeaderboardDefaultState = useCallback(() => {
-    if (!dashboardMainContentVisibleRef.current) return;
-    if (!mockEnabled && insforge.loading) return;
-    if (!mockEnabled && !signedIn) return;
-    const preloadOptions = {
-      accessMode: leaderboardAccessMode,
-      baseUrl: getLeaderboardBaseUrl(),
-      mockEnabled,
-      signedIn,
-      authLoading: Boolean(insforge.loading),
-      userId: cloudAuthSignedIn ? insforge.user?.id || null : null,
-    };
-    const contextKey = getLeaderboardPreloadContextKey(preloadOptions);
-    if (leaderboardStatePreloadContextKeysRef.current.has(contextKey)) return;
-    leaderboardStatePreloadContextKeysRef.current.add(contextKey);
-    void preloadLeaderboardDefaultState(preloadOptions);
-  }, [
-    cloudAuthSignedIn,
-    insforge.loading,
-    insforge.user?.id,
-    leaderboardAccessMode,
-    mockEnabled,
-    signedIn,
-  ]);
 
   const handleDashboardMainContentVisible = useCallback(() => {
     if (!isDashboardDefaultPath) return;
@@ -188,15 +136,9 @@ export default function App() {
       dashboardResourcePreloadStartedRef.current = true;
       void preloadDashboardPageResources();
     }
-    tryPreloadLeaderboardDefaultState();
   }, [
     isDashboardDefaultPath,
-    tryPreloadLeaderboardDefaultState,
   ]);
-
-  useEffect(() => {
-    tryPreloadLeaderboardDefaultState();
-  }, [tryPreloadLeaderboardDefaultState]);
 
   const authObject = useMemo(() => {
     if (!insforge.enabled || !cloudAuthSignedIn) return null;
@@ -207,11 +149,9 @@ export default function App() {
     };
   }, [cloudAuthSignedIn, insforge]);
 
-  let gate = isLocalMode || mockEnabled || screenshotMode ? "dashboard" : "landing";
+  let gate = "dashboard";
   if (normalizedPath === "/landing") gate = "landing";
   if (normalizedPath === "/dashboard") gate = "dashboard";
-  if (isLeaderboardPath) gate = "dashboard";
-  if (profileUserId) gate = "dashboard";
 
   const isLimitsPath = normalizedPath === "/limits";
   const isSettingsPath = normalizedPath === "/settings";
@@ -222,14 +162,13 @@ export default function App() {
   const isIpCheckPath = normalizedPath === "/ip-check";
   const isServiceStatusPath = normalizedPath === "/service-status";
   const isAchievementsPath = normalizedPath === "/achievements";
-  if (isLimitsPath || isSettingsPath || isSkillsPath || isSessionsPath || isWidgetsPath || isPetPath || isIpCheckPath || isServiceStatusPath || isAchievementsPath) gate = "dashboard";
+
+  if (isLeaderboardPath || profileUserId || isAchievementsPath) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   let PageComponent = DashboardPage;
-  if (profileUserId) {
-    PageComponent = LeaderboardProfilePage;
-  } else if (normalizedPath === "/leaderboard") {
-    PageComponent = LeaderboardPage;
-  } else if (isLimitsPath) {
+  if (isLimitsPath) {
     PageComponent = LimitsPage;
   } else if (isSettingsPath) {
     PageComponent = SettingsPage;
@@ -245,16 +184,12 @@ export default function App() {
     PageComponent = IpCheckPage;
   } else if (isServiceStatusPath) {
     PageComponent = ServiceStatusPage;
-  } else if (isAchievementsPath) {
-    PageComponent = AchievementsPage;
   }
 
   const showSidebar =
     !publicMode &&
-    !isAuthGateTriggered &&
     (normalizedPath === "/dashboard" ||
       normalizedPath === "/" ||
-      isLeaderboardPath ||
       isLimitsPath ||
       isSettingsPath ||
       isSkillsPath ||
@@ -262,52 +197,23 @@ export default function App() {
       isWidgetsPath ||
       isPetPath ||
       isIpCheckPath ||
-      isServiceStatusPath ||
-      isAchievementsPath);
-
-  // Public-host gating: on www.tokentracker.cc et al. there is no local
-  // CLI :7680 to fall back to, so dashboard / settings / etc. require a
-  // signed-in user. publicMode (shared link) and the loading state are
-  // exceptions that handle themselves.
-  const publicHostNeedsLogin =
-    !isLocalMode &&
-    !cloudAuthSignedIn &&
-    !publicMode &&
-    !insforge.loading &&
-    gate === "dashboard" &&
-    // Public-readable routes must stay reachable for signed-out visitors:
-    // /leaderboard and /u/:userId profiles are deliberate no-auth reads
-    // (see api.ts getLeaderboard + LeaderboardProfilePage). Without these
-    // exclusions the gate would bounce anonymous share-link traffic to /login.
-    !isLeaderboardPath &&
-    !profileUserId &&
-    normalizedPath !== "/login" &&
-    normalizedPath !== "/reset-password" &&
-    normalizedPath !== "/landing" &&
-    normalizedPath !== "/auth/callback" &&
-    normalizedPath !== "/auth/native-callback";
-  if (publicHostNeedsLogin) {
-    return <Navigate to="/login" replace />;
-  }
+      isServiceStatusPath);
 
   let content = null;
   if (normalizedPath === "/auth/callback" || normalizedPath === "/auth/native-callback") {
     content = <NativeAuthCallbackPage />;
   } else if (normalizedPath === "/login") {
-    content = <LoginPage />;
+    content = <Navigate to="/dashboard" replace />;
   } else if (normalizedPath === "/reset-password") {
-    content = <ResetPasswordPage />;
+    content = <Navigate to="/dashboard" replace />;
   } else if (normalizedPath === "/device") {
-    // Headless-CLI device-flow approval page. Standalone (no sidebar) so
-    // unsigned visitors hit the embedded sign-in CTA without sidebar nav
-    // confusion. Auth check happens inside DevicePage itself.
-    content = <DevicePage />;
+    content = <Navigate to="/dashboard" replace />;
   } else if (normalizedPath === "/wrapped") {
     // Year-end Wrapped page. Reads from /functions/tokentracker-wrapped
     // (provided by the local CLI server) — no auth required.
     content = <WrappedPage />;
   } else if (gate === "landing") {
-    content = <LandingPage signInUrl="/login" signUpUrl="/login" />;
+    content = <LandingPage signInUrl="/dashboard" signUpUrl="/dashboard" />;
   } else {
     const pageNode = (
       <PageComponent

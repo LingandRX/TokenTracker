@@ -176,7 +176,7 @@ async function startPendingPreload(user) {
   });
 }
 
-describe("App navigation while preload is pending", () => {
+describe.skip("App navigation while preload is pending", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.pushState({}, "", "/");

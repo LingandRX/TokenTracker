@@ -64,26 +64,16 @@ export function MacAppBanner({ todayTokens = 0, isSyncing = false, enterDelay = 
   // Determine banner content based on context
   let title, subtitle, buttonLabel, buttonIcon, onButtonClick, buttonHref;
 
-  if (isNativeApp && cloudSignedIn) {
-    title = "View the Leaderboard";
-    subtitle = "Compare your usage globally";
-    buttonLabel = "Leaderboard";
+  if (isNativeApp) {
+    title = "Try the Menu Bar App";
+    subtitle = "Always-on stats with Clawd companion";
+    buttonLabel = "Download";
     buttonIcon = (
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="opacity-70">
-        <path d="M2 8.5V10h8V8.5M6 1.5v6m0 0L3.5 5M6 7.5l2.5-2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(180 6 6)"/>
+        <path d="M6 2v6m0 0L3.5 5.5M6 8l2.5-2.5M2 10h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     );
-    onButtonClick = () => { window.location.pathname = "/leaderboard"; };
-  } else if (isNativeApp) {
-    title = "Join the Leaderboard";
-    subtitle = "Log in to compare your usage with others";
-    buttonLabel = "Log In";
-    buttonIcon = (
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="opacity-70">
-        <path d="M6.5 1.5h3a1 1 0 011 1v7a1 1 0 01-1 1h-3M5 8.5L7.5 6 5 3.5M7.5 6H1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    );
-    onButtonClick = openLoginModal;
+    buttonHref = RELEASE_URL;
   } else {
     title = "Try the Menu Bar App";
     subtitle = "Always-on stats with Clawd companion";

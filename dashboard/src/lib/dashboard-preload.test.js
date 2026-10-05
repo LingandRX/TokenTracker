@@ -372,6 +372,5 @@ describe("dashboard preload route boundary", () => {
     expect(appSource).toContain('import { NativeAuthCallbackPage } from "./pages/NativeAuthCallbackPage.jsx";');
     expect(appSource).not.toMatch(/const\s+NativeAuthCallbackPage\s*=\s*lazy\(/);
     expect(appSource).toContain('import("./pages/LimitsPage.jsx")');
-    expect(appSource).toContain('import("./pages/LeaderboardPage.jsx")');
   });
 });

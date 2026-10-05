@@ -169,9 +169,9 @@ describe("SettingsPage category navigation", () => {
     const { container } = renderSettings();
 
     const appearanceButton = screen.getByRole("button", { name: "Appearance" });
-    const accountButton = screen.getByRole("button", { name: "Account" });
+    const limitsButton = screen.getByRole("button", { name: "Usage & Limits" });
     const appearancePanel = container.querySelector('[data-settings-panel="appearance"]');
-    const accountPanel = container.querySelector('[data-settings-panel="account"]');
+    const limitsPanel = container.querySelector('[data-settings-panel="limits"]');
 
     expect(screen.getByText("Manage your preferences")).toBeInTheDocument();
     expect(screen.getByText("Personal")).toBeInTheDocument();
@@ -179,18 +179,17 @@ describe("SettingsPage category navigation", () => {
     expect(screen.getByText("Developer")).toBeInTheDocument();
     expect(appearanceButton).toHaveAttribute("aria-current", "page");
     expect(appearancePanel).not.toHaveAttribute("hidden");
-    expect(accountPanel).toHaveAttribute("hidden");
+    expect(limitsPanel).toHaveAttribute("hidden");
     expect(screen.getByTestId("appearance-content")).toBeInTheDocument();
-    expect(screen.getByTestId("account-content")).toBeInTheDocument();
 
     await act(async () => {
-      await user.click(accountButton);
+      await user.click(limitsButton);
     });
 
-    expect(accountButton).toHaveAttribute("aria-current", "page");
+    expect(limitsButton).toHaveAttribute("aria-current", "page");
     expect(appearanceButton).not.toHaveAttribute("aria-current");
     expect(appearancePanel).toHaveAttribute("hidden");
-    expect(accountPanel).not.toHaveAttribute("hidden");
+    expect(limitsPanel).not.toHaveAttribute("hidden");
   });
 
   it("omits the network category when the local proxy API is unavailable", () => {
