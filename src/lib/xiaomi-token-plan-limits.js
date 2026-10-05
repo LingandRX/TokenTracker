@@ -40,31 +40,37 @@ function resolveXiaomiAuthPath({ home = os.homedir(), trackerDir } = {}) {
 }
 
 function readConfig({ env = process.env, home = os.homedir() } = {}) {
-  if (env && typeof env === "object") {
-    const rawCookie = typeof env.XIAOMI_TOKEN_PLAN_COOKIE === "string" ? env.XIAOMI_TOKEN_PLAN_COOKIE.trim() : "";
-    if (rawCookie) return { cookieHeader: rawCookie };
-
-    const serviceToken = typeof env.XIAOMI_SERVICE_TOKEN === "string" ? env.XIAOMI_SERVICE_TOKEN.trim() : "";
-    const userId = typeof env.XIAOMI_USER_ID === "string" ? env.XIAOMI_USER_ID.trim() : "";
-    if (serviceToken && userId) {
-      return { cookieHeader: `api-platform_serviceToken=${serviceToken}; userId=${userId}` };
-    }
-  }
-
+  // 1. Explicit UI-saved auth file takes precedence over static shell environment variables
   const authPath = resolveXiaomiAuthPath({ home });
   try {
     if (fs.existsSync(authPath)) {
       const parsed = JSON.parse(fs.readFileSync(authPath, "utf8"));
       if (typeof parsed?.cookie === "string" && parsed.cookie.trim()) {
-        return { cookieHeader: parsed.cookie.trim() };
+        return { cookieHeader: parsed.cookie.trim(), source: "file" };
       }
       if (parsed?.serviceToken && parsed?.userId) {
         return {
           cookieHeader: `api-platform_serviceToken=${String(parsed.serviceToken).trim()}; userId=${String(parsed.userId).trim()}`,
+          source: "file",
         };
       }
     }
   } catch (_e) {}
+
+  // 2. Fall back to process environment variables (shell export / launchctl)
+  if (env && typeof env === "object") {
+    const rawCookie = typeof env.XIAOMI_TOKEN_PLAN_COOKIE === "string" ? env.XIAOMI_TOKEN_PLAN_COOKIE.trim() : "";
+    if (rawCookie) return { cookieHeader: rawCookie, source: "env" };
+
+    const serviceToken = typeof env.XIAOMI_SERVICE_TOKEN === "string" ? env.XIAOMI_SERVICE_TOKEN.trim() : "";
+    const userId = typeof env.XIAOMI_USER_ID === "string" ? env.XIAOMI_USER_ID.trim() : "";
+    if (serviceToken && userId) {
+      return {
+        cookieHeader: `api-platform_serviceToken=${serviceToken}; userId=${userId}`,
+        source: "env",
+      };
+    }
+  }
 
   return null;
 }

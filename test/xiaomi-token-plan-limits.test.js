@@ -73,29 +73,51 @@ describe("xiaomi-token-plan-limits", () => {
       }
     });
 
-    it("prefers XIAOMI_TOKEN_PLAN_COOKIE when provided", () => {
+    it("reads XIAOMI_TOKEN_PLAN_COOKIE when no auth file exists", () => {
       const cfg = readConfig({
         env: { XIAOMI_TOKEN_PLAN_COOKIE: "api-platform_serviceToken=st123; userId=u456" },
       });
-      assert.deepEqual(cfg, { cookieHeader: "api-platform_serviceToken=st123; userId=u456" });
+      assert.deepEqual(cfg, { cookieHeader: "api-platform_serviceToken=st123; userId=u456", source: "env" });
     });
 
     it("constructs cookie from XIAOMI_SERVICE_TOKEN and XIAOMI_USER_ID", () => {
       const cfg = readConfig({
         env: { XIAOMI_SERVICE_TOKEN: "st-abc", XIAOMI_USER_ID: "10086" },
       });
-      assert.deepEqual(cfg, { cookieHeader: "api-platform_serviceToken=st-abc; userId=10086" });
+      assert.deepEqual(cfg, { cookieHeader: "api-platform_serviceToken=st-abc; userId=10086", source: "env" });
     });
 
-    it("reads auth JSON file from home when env is absent", () => {
+    it("prefers saved auth file over environment variable when both exist", () => {
       const { home, trackerDir, cleanup } = makeTempHome();
       try {
         fs.writeFileSync(
           path.join(trackerDir, "xiaomi-token-plan-auth.json"),
-          JSON.stringify({ cookie: "api-platform_serviceToken=file_st; userId=file_uid" }),
+          JSON.stringify({ cookie: "api-platform_serviceToken=from_ui; userId=from_ui" }),
         );
-        const cfg = readConfig({ env: {}, home });
-        assert.deepEqual(cfg, { cookieHeader: "api-platform_serviceToken=file_st; userId=file_uid" });
+        const cfg = readConfig({
+          env: { XIAOMI_TOKEN_PLAN_COOKIE: "api-platform_serviceToken=from_env; userId=from_env" },
+          home,
+        });
+        assert.deepEqual(cfg, {
+          cookieHeader: "api-platform_serviceToken=from_ui; userId=from_ui",
+          source: "file",
+        });
+      } finally {
+        cleanup();
+      }
+    });
+
+    it("falls back to environment variable when auth file is absent", () => {
+      const { home, cleanup } = makeTempHome();
+      try {
+        const cfg = readConfig({
+          env: { XIAOMI_TOKEN_PLAN_COOKIE: "api-platform_serviceToken=fallback; userId=fallback" },
+          home,
+        });
+        assert.deepEqual(cfg, {
+          cookieHeader: "api-platform_serviceToken=fallback; userId=fallback",
+          source: "env",
+        });
       } finally {
         cleanup();
       }
