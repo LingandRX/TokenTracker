@@ -133,6 +133,7 @@ describe("useLimitsDisplayPrefs", () => {
         "opencodeGo",
         "qoder",
         "qoderCn",
+        "xiaomiTokenPlan",
         "zcode",
       ].sort(),
     );
