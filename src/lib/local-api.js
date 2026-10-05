@@ -3201,6 +3201,80 @@ function createLocalApiHandler({ queuePath, serverVersion = null }) {
       return true;
     }
 
+    // --- xiaomi-token-plan-config ---
+    if (p === "/functions/tokentracker-xiaomi-token-plan-config") {
+      const method = String(req.method || "GET").toUpperCase();
+      const { resolveXiaomiAuthPath } = require("./xiaomi-token-plan-limits");
+      const { resetUsageLimitsCache } = require("./usage-limits");
+      const { writeFileAtomic, chmod600IfPossible } = require("./fs");
+      const trackerDir = path.dirname(qp);
+      const authPath = resolveXiaomiAuthPath({ trackerDir });
+
+      try {
+        if (method === "GET") {
+          let hasCookie = false;
+          let masked = null;
+          let updatedAt = null;
+          if (fs.existsSync(authPath)) {
+            try {
+              const parsed = JSON.parse(fs.readFileSync(authPath, "utf8"));
+              const c = typeof parsed?.cookie === "string" ? parsed.cookie.trim() : "";
+              if (c) {
+                hasCookie = true;
+                masked = c.length > 24 ? c.slice(0, 10) + "..." + c.slice(-6) : "***";
+                updatedAt = parsed.updatedAt || null;
+              }
+            } catch (_e) {}
+          }
+          json(res, { ok: true, configured: hasCookie, maskedCookie: masked, updatedAt });
+          return true;
+        }
+
+        if (method === "POST") {
+          if (!isAuthorizedLocalMutation(req)) {
+            json(res, { ok: false, error: "Unauthorized" }, 401);
+            return true;
+          }
+          const body = await readJsonBody(req);
+          if (body?.action === "save") {
+            const rawCookie = typeof body?.cookie === "string" ? body.cookie.trim() : "";
+            if (!rawCookie) {
+              json(res, { ok: false, error: "Cookie cannot be empty" }, 400);
+              return true;
+            }
+            const payload = {
+              cookie: rawCookie,
+              updatedAt: new Date().toISOString(),
+            };
+            fs.mkdirSync(path.dirname(authPath), { recursive: true });
+            await writeFileAtomic(authPath, JSON.stringify(payload, null, 2) + "\n", { mode: 0o600 });
+            await chmod600IfPossible(authPath);
+            resetUsageLimitsCache();
+            json(res, { ok: true, configured: true });
+            return true;
+          }
+
+          if (body?.action === "clear") {
+            try {
+              if (fs.existsSync(authPath)) fs.unlinkSync(authPath);
+            } catch (_e) {}
+            resetUsageLimitsCache();
+            json(res, { ok: true, configured: false });
+            return true;
+          }
+
+          json(res, { ok: false, error: "Unknown action" }, 400);
+          return true;
+        }
+
+        json(res, { ok: false, error: "Method Not Allowed" }, 405);
+        return true;
+      } catch (error) {
+        json(res, { ok: false, error: error?.message || "Operation failed" }, 500);
+        return true;
+      }
+    }
+
     // --- skills manager ---
     if (p === "/functions/tokentracker-skills") {
       const method = String(req.method || "GET").toUpperCase();

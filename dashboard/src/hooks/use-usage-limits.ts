@@ -238,6 +238,13 @@ export function useUsageLimits(options?: UseUsageLimitsOptions) {
     }
   }, [beginRequest, localEnabled, publishSuccessfulState]);
 
+  useEffect(() => {
+    if (!localEnabled || typeof window === "undefined") return;
+    const handleManualRefresh = () => void refresh();
+    window.addEventListener("tokentracker-refresh-limits", handleManualRefresh);
+    return () => window.removeEventListener("tokentracker-refresh-limits", handleManualRefresh);
+  }, [localEnabled, refresh]);
+
   const refreshFromServerCache = useCallback(async () => {
     if (!localEnabled) return;
     const isCurrent = beginRequest();

@@ -15,6 +15,7 @@ import { buildResetBankRows } from "./usage-limits-reset-bank.js";
 import { PROVIDER_LIMIT_SPECS } from "./usage-limits-provider-specs.js";
 import { HoverTooltip } from "../../components/HoverTooltip.jsx";
 import { cycleView, countdownText, remainingLabel } from "../../../lib/subscription-display.js";
+import { saveXiaomiTokenPlanCookie } from "../../../lib/xiaomi-token-plan-api.js";
 
 const LIMITS_PROVIDER_ICON_CLASS = "shrink-0 text-oai-black dark:text-oai-white";
 
@@ -1021,6 +1022,9 @@ function DevinSetupHint() {
 
 function XiaomiTokenPlanSetupHint() {
   const [copied, setCopied] = useState(false);
+  const [cookieInput, setCookieInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
   const snippet = [
     "read -r -s XIAOMI_TOKEN_PLAN_COOKIE",
     "export XIAOMI_TOKEN_PLAN_COOKIE",
@@ -1034,6 +1038,24 @@ function XiaomiTokenPlanSetupHint() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch (_e) {}
+  };
+
+  const handleSaveCookie = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cookieInput.trim()) return;
+    setSaving(true);
+    setSaveStatus(null);
+    try {
+      await saveXiaomiTokenPlanCookie(cookieInput.trim());
+      setSaveStatus("success");
+      setCookieInput("");
+      window.dispatchEvent(new CustomEvent("tokentracker-refresh-limits"));
+    } catch (_err) {
+      setSaveStatus("error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -1073,6 +1095,37 @@ function XiaomiTokenPlanSetupHint() {
           <div className="mt-1 text-[10px] text-oai-gray-400 dark:text-oai-gray-500">{copy("limits.xiaomiTokenPlan.setupHint.note_app")}</div>
         </HintStep>
       </ol>
+
+      <div className="mt-3 pt-2.5 border-t border-oai-gray-200 dark:border-oai-gray-700/60">
+        <div className="font-semibold text-oai-gray-800 dark:text-oai-gray-100">
+          {copy("limits.xiaomiTokenPlan.input.title")}
+        </div>
+        <form onSubmit={handleSaveCookie} className="mt-1.5 flex flex-col sm:flex-row gap-2">
+          <input
+            type="password"
+            value={cookieInput}
+            onChange={(e) => setCookieInput(e.target.value)}
+            placeholder={copy("limits.xiaomiTokenPlan.input.placeholder")}
+            className="flex-1 rounded-md border border-oai-gray-300 dark:border-oai-gray-700 bg-white dark:bg-oai-gray-900 px-2.5 py-1 text-[11px] text-oai-gray-900 dark:text-oai-gray-100 placeholder:text-oai-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oai-brand-500"
+          />
+          <button
+            type="submit"
+            disabled={saving || !cookieInput.trim()}
+            className="shrink-0 rounded-md bg-oai-brand px-3 py-1 text-[11px] font-medium text-white hover:bg-oai-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {saving
+              ? copy("limits.xiaomiTokenPlan.input.saving")
+              : saveStatus === "success"
+                ? copy("limits.xiaomiTokenPlan.input.saved")
+                : copy("limits.xiaomiTokenPlan.input.save")}
+          </button>
+        </form>
+        {saveStatus === "error" ? (
+          <div className="mt-1 text-red-500 dark:text-red-400">
+            {copy("limits.xiaomiTokenPlan.input.error")}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

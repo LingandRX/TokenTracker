@@ -15,11 +15,17 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Settings } from "lucide-react";
+import { Popover } from "@base-ui/react/popover";
 import { limitProviderIconKey, limitProviderName } from "../hooks/use-limits-display-prefs.js";
 import { copy } from "../lib/copy";
 import { cn } from "../lib/cn";
 import { ProviderIcon } from "../ui/dashboard/components/ProviderIcon.jsx";
+import {
+  getXiaomiTokenPlanConfig,
+  saveXiaomiTokenPlanCookie,
+  clearXiaomiTokenPlanCookie,
+} from "../lib/xiaomi-token-plan-api.js";
 
 const LIMITS_SETTINGS_ICON_CLASS = "shrink-0 text-oai-gray-900 dark:text-oai-gray-200";
 
@@ -43,6 +49,141 @@ function ToggleSwitch({ checked, onChange, ariaLabel }) {
         )}
       />
     </button>
+  );
+}
+
+function XiaomiConfigPopover() {
+  const [open, setOpen] = React.useState(false);
+  const [configured, setConfigured] = React.useState(false);
+  const [masked, setMasked] = React.useState(null);
+  const [cookieInput, setCookieInput] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+  const [status, setStatus] = React.useState(null);
+
+  const loadConfig = React.useCallback(async () => {
+    try {
+      const res = await getXiaomiTokenPlanConfig();
+      setConfigured(Boolean(res?.configured));
+      setMasked(res?.maskedCookie || null);
+    } catch (_e) {}
+  }, []);
+
+  React.useEffect(() => {
+    if (open) {
+      void loadConfig();
+      setStatus(null);
+    }
+  }, [open, loadConfig]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!cookieInput.trim()) return;
+    setSaving(true);
+    setStatus(null);
+    try {
+      await saveXiaomiTokenPlanCookie(cookieInput.trim());
+      setStatus("saved");
+      setCookieInput("");
+      await loadConfig();
+      window.dispatchEvent(new CustomEvent("tokentracker-refresh-limits"));
+    } catch (_e) {
+      setStatus("error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClear = async () => {
+    setSaving(true);
+    try {
+      await clearXiaomiTokenPlanCookie();
+      setStatus("cleared");
+      setCookieInput("");
+      await loadConfig();
+      window.dispatchEvent(new CustomEvent("tokentracker-refresh-limits"));
+    } catch (_e) {
+      setStatus("error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger
+        type="button"
+        title={copy("limits.settings.config_xiaomi")}
+        aria-label={copy("limits.settings.config_xiaomi")}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-oai-gray-200 dark:border-oai-gray-700 bg-white dark:bg-oai-gray-900 text-oai-gray-500 dark:text-oai-gray-400 hover:bg-oai-gray-100 dark:hover:bg-oai-gray-800 hover:text-oai-black dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oai-brand-500"
+      >
+        <Settings className="h-3.5 w-3.5" aria-hidden />
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={8} side="bottom" align="end" className="z-50">
+          <Popover.Popup className="w-80 rounded-xl border border-oai-gray-200 dark:border-oai-gray-700 bg-white dark:bg-oai-gray-900 p-4 shadow-xl text-left">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-sm text-oai-gray-900 dark:text-white">
+                {copy("limits.settings.xiaomi.title")}
+              </span>
+              <span
+                className={cn(
+                  "px-2 py-0.5 text-[10.5px] rounded-full font-medium",
+                  configured
+                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                    : "bg-oai-gray-100 dark:bg-oai-gray-800 text-oai-gray-600 dark:text-oai-gray-400",
+                )}
+              >
+                {configured
+                  ? copy("limits.settings.xiaomi.status_configured")
+                  : copy("limits.settings.xiaomi.status_not_configured")}
+              </span>
+            </div>
+            <p className="text-xs text-oai-gray-500 dark:text-oai-gray-400 mb-3">
+              {copy("limits.settings.xiaomi.desc")}
+            </p>
+            {masked ? (
+              <div className="mb-3 rounded-md bg-oai-gray-50 dark:bg-oai-gray-800/60 p-2 font-mono text-[10.5px] text-oai-gray-600 dark:text-oai-gray-300">
+                {masked}
+              </div>
+            ) : null}
+            <form onSubmit={handleSave} className="space-y-2.5">
+              <input
+                type="password"
+                value={cookieInput}
+                onChange={(e) => setCookieInput(e.target.value)}
+                placeholder={copy("limits.xiaomiTokenPlan.input.placeholder")}
+                className="w-full rounded-md border border-oai-gray-300 dark:border-oai-gray-700 bg-white dark:bg-oai-gray-800 px-2.5 py-1.5 text-xs text-oai-gray-900 dark:text-oai-gray-100 placeholder:text-oai-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oai-brand-500"
+              />
+              <div className="flex items-center justify-between pt-1">
+                {configured ? (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    disabled={saving}
+                    className="text-xs text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                  >
+                    {copy("limits.settings.xiaomi.clear")}
+                  </button>
+                ) : (
+                  <span />
+                )}
+                <button
+                  type="submit"
+                  disabled={saving || !cookieInput.trim()}
+                  className="rounded-md bg-oai-brand px-3 py-1 text-xs font-medium text-white hover:bg-oai-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving
+                    ? copy("limits.xiaomiTokenPlan.input.saving")
+                    : status === "saved"
+                      ? copy("limits.settings.xiaomi.saved")
+                      : copy("limits.settings.xiaomi.save")}
+                </button>
+              </div>
+            </form>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -89,7 +230,8 @@ function ProviderRow({ id, visible, onToggle }) {
         {limitProviderName(id)}
       </span>
 
-      <div onPointerDown={(e) => e.stopPropagation()}>
+      <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-2">
+        {id === "xiaomiTokenPlan" ? <XiaomiConfigPopover /> : null}
         <ToggleSwitch
           checked={visible}
           onChange={onToggle}

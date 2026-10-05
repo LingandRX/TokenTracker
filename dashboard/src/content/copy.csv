@@ -1671,6 +1671,23 @@ limits.xiaomiTokenPlan.setupHint.step3,ui,LimitsPage,UsageLimitsPanel,xiaomi_tok
 limits.xiaomiTokenPlan.setupHint.copy,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_copy,"Copy",,active
 limits.xiaomiTokenPlan.setupHint.copied,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_copied,"Copied",,active
 limits.xiaomiTokenPlan.setupHint.note_app,ui,LimitsPage,UsageLimitsPanel,xiaomi_token_plan_hint_note_app,"macOS app: use the launchctl setenv line, then reopen the app.",,active
+limits.xiaomiTokenPlan.input.title,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_title,"Or configure session cookie directly:",,active
+limits.xiaomiTokenPlan.input.placeholder,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_placeholder,"Paste cookie (e.g. api-platform_serviceToken=...; userId=...)",,active
+limits.xiaomiTokenPlan.input.save,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_save,"Save & Connect",,active
+limits.xiaomiTokenPlan.input.saving,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_saving,"Saving...",,active
+limits.xiaomiTokenPlan.input.saved,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_saved,"Saved! Connecting...",,active
+limits.xiaomiTokenPlan.input.error,ui,LimitsPage,UsageLimitsPanel,xiaomi_input_error,"Failed to save cookie",,active
+limits.settings.config_xiaomi,ui,LimitsPage,LimitsSettingsPanel,config_xiaomi,"Configure Xiaomi Token Plan",,active
+limits.settings.xiaomi.title,ui,LimitsPage,LimitsSettingsPanel,xiaomi_title,"Xiaomi Token Plan",,active
+limits.settings.xiaomi.desc,ui,LimitsPage,LimitsSettingsPanel,xiaomi_desc,"Configure your console session cookie to track token quota.",,active
+limits.settings.xiaomi.status_configured,ui,LimitsPage,LimitsSettingsPanel,xiaomi_status_configured,"Configured",,active
+limits.settings.xiaomi.status_not_configured,ui,LimitsPage,LimitsSettingsPanel,xiaomi_status_not_configured,"Not configured",,active
+limits.settings.xiaomi.cookie_label,ui,LimitsPage,LimitsSettingsPanel,xiaomi_cookie_label,"Session Cookie",,active
+limits.settings.xiaomi.save,ui,LimitsPage,LimitsSettingsPanel,xiaomi_save,"Save Cookie",,active
+limits.settings.xiaomi.clear,ui,LimitsPage,LimitsSettingsPanel,xiaomi_clear,"Clear",,active
+limits.settings.xiaomi.cleared,ui,LimitsPage,LimitsSettingsPanel,xiaomi_cleared,"Cleared",,active
+limits.settings.xiaomi.saved,ui,LimitsPage,LimitsSettingsPanel,xiaomi_saved,"Saved!",,active
+limits.settings.xiaomi.close,ui,LimitsPage,LimitsSettingsPanel,xiaomi_close,"Close",,active
 quota.title,ui,QuotaWidget,QuotaWidget,title,"Limits",,active
 quota.remaining,ui,QuotaWidget,QuotaWidget,remaining,"Remaining",,active
 quota.stale,ui,QuotaWidget,QuotaWidget,stale,"Update delayed",,active

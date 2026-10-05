@@ -31,7 +31,11 @@ function resolveXiaomiLimitsCachePath({ home = os.homedir() } = {}) {
   return path.join(home || os.homedir(), ".tokentracker", "tracker", XIAOMI_LIMITS_CACHE_FILE);
 }
 
-function resolveXiaomiAuthPath({ home = os.homedir() } = {}) {
+function resolveXiaomiAuthPath({ home = os.homedir(), trackerDir } = {}) {
+  if (trackerDir) {
+    const dir = path.basename(trackerDir) === "tracker" ? trackerDir : path.join(trackerDir, "tracker");
+    return path.join(dir, "xiaomi-token-plan-auth.json");
+  }
   return path.join(home || os.homedir(), ".tokentracker", "tracker", "xiaomi-token-plan-auth.json");
 }
 
